@@ -1,0 +1,26 @@
+{
+  "name": "twitter-oauth2-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kg0r0/twitter-oauth2-client.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kg0r0/twitter-oauth2-client/issues"
+  },
+  "homepage": "https://github.com/kg0r0/twitter-oauth2-client#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "cookie-session": "^1.4.0",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1",
+    "openid-client": "^4.9.0"
+  }
+}
