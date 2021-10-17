@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const cookieSession = require('cookie-session');
 const cookieParser = require('cookie-parser');
 const { Issuer, generators } = require('openid-client');
+const axios = require('axios');
 const config = require('./config.json');
 
 const issuer = new Issuer({
@@ -59,6 +60,23 @@ app.get('/cb', (req, res, next) => {
     return res.redirect(req.session.originalUrl);
   })().catch(next);
 });
+
+app.get('/rf', (req, res, next) => {
+  (async () => {
+    if (!req.session || !req.session.tokenSet.refresh_token) {
+      return res.status(403).send('NG');
+    }
+    const result = await axios.post('https://api.twitter.com/2/oauth2/token', {
+      refresh_token: req.session.tokenSet.refresh_token,
+      grant_type: 'refresh_token',
+      client_id: config.client_id
+    });
+    console.log(result.data);
+    req.session.tokenSet = result.data;
+    return res.send('OK!');
+  })().catch(next);
+});
+
 const port = config.port || 3000;
 app.listen(port, async () => {
   console.log(`Started app on port ${port}`);
