@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/kg0r0/twitter-oauth2-client#readme",
   "dependencies": {
+    "axios": "^0.23.0",
     "cookie-parser": "^1.4.5",
     "cookie-session": "^1.4.0",
     "crypto": "^1.0.1",
