@@ -61,7 +61,7 @@ app.get('/cb', (req, res, next) => {
   })().catch(next);
 });
 
-app.get('/rf', (req, res, next) => {
+app.get('/refresh', (req, res, next) => {
   (async () => {
     if (!req.session || !req.session.tokenSet.refresh_token) {
       return res.status(403).send('NG');
@@ -74,6 +74,21 @@ app.get('/rf', (req, res, next) => {
     console.log(result.data);
     req.session.tokenSet = result.data;
     return res.send('OK!');
+  })().catch(next);
+});
+
+app.get('/revoke', (req, res, next) => {
+  (async () => {
+    if (!req.session.tokenSet) {
+      return res.status(403).send('NG');
+    }
+    const result = await axios.post('https://api.twitter.com/2/oauth2/revoke', {
+      token: req.session.tokenSet.access_token,
+      client_id: config.client_id,
+      token_type_hint: 'access_token'
+    });
+    console.log(result.data);
+    return res.send(result.data);
   })().catch(next);
 });
 
