@@ -70,6 +70,11 @@ app.get('/refresh', (req, res, next) => {
       refresh_token: req.session.tokenSet.refresh_token,
       grant_type: 'refresh_token',
       client_id: config.client_id
+    }, {
+      auth: {
+        username: config.client_id,
+        password: config.client_secret
+      }
     });
     console.log(result.data);
     req.session.tokenSet = result.data;
