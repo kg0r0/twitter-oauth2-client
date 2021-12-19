@@ -14,7 +14,7 @@ const issuer = new Issuer({
 
 const client = new issuer.Client({
   client_id: config.client_id,
-  token_endpoint_auth_method: 'none'
+  client_secret: config.client_secret,
 });
 
 app.use(cookieSession({
@@ -54,7 +54,7 @@ app.get('/cb', (req, res, next) => {
     const state = req.session.state;
     const codeVerifier = req.session.codeVerifier;
     const params = client.callbackParams(req);
-    const tokenSet = await client.oauthCallback(config.redirect_uri, params, { code_verifier: codeVerifier, state });
+    const tokenSet = await client.oauthCallback(config.redirect_uri, params, { code_verifier: codeVerifier, state }, { exchangeBody: { client_id: config.client_id } });
     console.log('received and validated tokens %j', tokenSet);
     req.session.tokenSet = tokenSet;
     return res.redirect(req.session.originalUrl);
