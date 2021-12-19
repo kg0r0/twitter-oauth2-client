@@ -1,18 +1,19 @@
 # twitter-oauth2-client
 ## Usage
 ### Setup 
-Set the ``client_id`` and ``redirect_uri`` in config.json.
+Set the ``client_id``, ``client_secret`` and ``redirect_uri`` in config.json.
 Each value can be confirmed on the following screen of the Developer Portal.
-#### client_id
-![image](https://user-images.githubusercontent.com/33596117/136065513-25079712-ea19-4af8-9e14-fc03882576c4.png)
+#### client_id and client_secret
+<img src="https://user-images.githubusercontent.com/33596117/146667830-260b6df0-0030-4f7e-af2d-0703e38e072d.png" width="320px">
 
 ##### redirect_uri
-![image](https://user-images.githubusercontent.com/33596117/136065694-7e6dfa73-d608-4c73-b8ad-4672d2e60b0b.png)
+<img src="https://user-images.githubusercontent.com/33596117/146667853-a3bedbd9-417e-47a4-b6fa-08c627252855.png" width="320px">
 
 ### Run
   ```sh
-  $ node index.js
-  Started app on port 3000
+  $ node confidential-client.js
+  OR
+  $ node public-client.js
   ```
 
 ## References
