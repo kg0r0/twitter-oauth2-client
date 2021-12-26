@@ -1,4 +1,5 @@
 # twitter-oauth2-client
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ## Usage
 ### Setup 
 Set the ``client_id``, ``client_secret`` and ``redirect_uri`` in config.json.
