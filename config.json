@@ -1,5 +1,6 @@
 {
   "client_id": "<YOUR-CLIENT-ID>",
   "client_secret": "<YOUR-CLIENT-SECRET>",
-  "redirect_uri": "<YOUR-REDIRECT-URI>"
+  "redirect_uri": "<YOUR-REDIRECT-URI>",
+  "client_type": "CONFIDENTIAL"
 }

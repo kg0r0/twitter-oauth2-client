@@ -12,9 +12,7 @@ Each value can be confirmed on the following screen of the Developer Portal.
 
 ### Run
   ```sh
-  $ node confidential-client.js
-  OR
-  $ node public-client.js
+  $ npm start 
   ```
 
 ## References
