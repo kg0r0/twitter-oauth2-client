@@ -1,27 +1,52 @@
-const express = require('express');
-const app = express();
-const crypto = require('crypto');
-const cookieSession = require('cookie-session');
-const cookieParser = require('cookie-parser');
-const { Issuer, generators } = require('openid-client');
-const axios = require('axios');
-const config = require('./config.json');
+import express from 'express';
+import session from 'express-session';
+import crypto from 'crypto';
+import { Issuer, generators, TokenSet } from 'openid-client';
+import axios from 'axios';
+const config: Config = require('../config.json');
+
+interface Config {
+  client_id: string;
+  client_secret: string;
+  redirect_uri: string;
+  client_type: 'CONFIDENTIAL' | 'PUBLIC';
+}
+
+declare module 'express-session' {
+  export interface SessionData {
+    tokenSet: TokenSet;
+    state: string;
+    codeVerifier: string;
+    originalUrl: string;
+  }
+}
+
+const app: express.Express = express();
 
 const issuer = new Issuer({
+  issuer: 'https://twitter.com',
   authorization_endpoint: 'https://twitter.com/i/oauth2/authorize',
   token_endpoint: 'https://api.twitter.com/2/oauth2/token'
 });
 
-const client = new issuer.Client({
+const confidentialClient = new issuer.Client({
   client_id: config.client_id,
-  token_endpoint_auth_method: 'none'
+  client_secret: config.client_secret,
 });
 
-app.use(cookieSession({
+const publicClient = new issuer.Client({
+  client_id: config.client_id,
+  token_endpoint_auth_method: 'none'
+})
+
+const client = config.client_type == 'PUBLIC' ? publicClient : confidentialClient;
+
+app.use(session({
   name: 'session',
-  keys: [crypto.randomBytes(32).toString('hex')],
+  secret: [crypto.randomBytes(32).toString('hex')],
+  resave: true,
+  saveUninitialized: true
 }));
-app.use(cookieParser())
 
 app.get('/', (req, res, next) => {
   (async () => {
@@ -54,16 +79,18 @@ app.get('/cb', (req, res, next) => {
     const state = req.session.state;
     const codeVerifier = req.session.codeVerifier;
     const params = client.callbackParams(req);
-    const tokenSet = await client.oauthCallback(config.redirect_uri, params, { code_verifier: codeVerifier, state });
+    const tokenSet = await client.oauthCallback(config.redirect_uri, params, { code_verifier: codeVerifier, state }, { exchangeBody: { client_id: config.client_id } });
     console.log('received and validated tokens %j', tokenSet);
     req.session.tokenSet = tokenSet;
+    if (typeof req.session.originalUrl != 'string')
+      throw new Error('originalUrl must be a string');
     return res.redirect(req.session.originalUrl);
   })().catch(next);
 });
 
 app.get('/refresh', (req, res, next) => {
   (async () => {
-    if (!req.session || !req.session.tokenSet.refresh_token) {
+    if (!req.session || !req.session.tokenSet || !req.session.tokenSet.refresh_token) {
       return res.status(403).send('NG');
     }
     const result = await axios.post('https://api.twitter.com/2/oauth2/token', {
@@ -77,7 +104,10 @@ app.get('/refresh', (req, res, next) => {
       }
     });
     console.log(result.data);
-    req.session.tokenSet = result.data;
+    if (typeof result.data != 'object')
+      throw new Error('Unexpected response.');
+    const data = result.data as TokenSet
+    req.session.tokenSet = data;
     return res.send('OK!');
   })().catch(next);
 });
@@ -91,13 +121,18 @@ app.get('/revoke', (req, res, next) => {
       token: req.session.tokenSet.access_token,
       client_id: config.client_id,
       token_type_hint: 'access_token'
+    }, {
+      auth: {
+        username: config.client_id,
+        password: config.client_secret
+      }
     });
     console.log(result.data);
     return res.send(result.data);
   })().catch(next);
 });
 
-const port = config.port || 3000;
+const port = 3000;
 app.listen(port, () => {
   console.log(`Started app on port ${port}`);
 });
