@@ -1,5 +1,7 @@
 # twitter-oauth2-client
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+Sample code for the [Twitter OAuth2.0](https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code) Client.
 ## Usage
 ### Setup 
 Set the ``client_id``, ``client_secret`` and ``redirect_uri`` in config.json.
@@ -12,6 +14,7 @@ Each value can be confirmed on the following screen of the Developer Portal.
 
 ### Run
   ```sh
+  $ npm install
   $ npm start 
   ```
 
