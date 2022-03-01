@@ -12,6 +12,18 @@ interface Config {
   client_type: 'CONFIDENTIAL' | 'PUBLIC';
 }
 
+interface UsersMeResponse {
+  data: {
+    id: string;
+    name: string;
+    username: string;
+  }
+}
+
+interface RevocationResponse {
+  revoked: boolean;
+}
+
 declare module 'express-session' {
   export interface SessionData {
     tokenSet: TokenSet;
@@ -51,7 +63,13 @@ app.use(session({
 app.get('/', (req, res, next) => {
   (async () => {
     if (req.session.tokenSet) {
-      return res.send('OK!');
+      const { data } = await axios.get<UsersMeResponse>('https://api.twitter.com/2/users/me',
+        {
+          headers: {
+            Authorization: `Bearer ${req.session.tokenSet.access_token}`
+          }
+        });
+      return res.send(`Hello ${data.data.username}!`);
     }
     const state = generators.state();
     const codeVerifier = generators.codeVerifier();
@@ -93,7 +111,7 @@ app.get('/refresh', (req, res, next) => {
     if (!req.session || !req.session.tokenSet || !req.session.tokenSet.refresh_token) {
       return res.status(403).send('NG');
     }
-    const result = await axios.post('https://api.twitter.com/2/oauth2/token', {
+    const { data } = await axios.post<TokenSet>('https://api.twitter.com/2/oauth2/token', {
       refresh_token: req.session.tokenSet.refresh_token,
       grant_type: 'refresh_token',
       client_id: config.client_id
@@ -103,10 +121,7 @@ app.get('/refresh', (req, res, next) => {
         password: config.client_secret
       }
     });
-    console.log(result.data);
-    if (typeof result.data != 'object')
-      throw new Error('Unexpected response.');
-    const data = result.data as TokenSet
+    console.log(data);
     req.session.tokenSet = data;
     return res.send('OK!');
   })().catch(next);
@@ -117,7 +132,7 @@ app.get('/revoke', (req, res, next) => {
     if (!req.session.tokenSet) {
       return res.status(403).send('NG');
     }
-    const result = await axios.post('https://api.twitter.com/2/oauth2/revoke', {
+    const { data } = await axios.post<RevocationResponse>('https://api.twitter.com/2/oauth2/revoke', {
       token: req.session.tokenSet.access_token,
       client_id: config.client_id,
       token_type_hint: 'access_token'
@@ -127,8 +142,14 @@ app.get('/revoke', (req, res, next) => {
         password: config.client_secret
       }
     });
-    console.log(result.data);
-    return res.send(result.data);
+    if (data.revoked) {
+      req.session.destroy((err) => {
+        if (err) {
+          throw err;
+        }
+      });
+    }
+    return res.send(data);
   })().catch(next);
 });
 
